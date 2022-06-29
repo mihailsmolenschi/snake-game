@@ -35,7 +35,7 @@ html {
   // overflow: hidden;
 
   transition: all 0.2s;
-  // position: relative;
+  position: relative;
 
   // SNAKE
   .head,
@@ -49,14 +49,17 @@ html {
 
   .head {
     background-color: green;
+    z-index: 3;
   }
   .body {
     background-color: lightgreen;
+    z-index: 2;
   }
 
   // FOOD
   .food {
     background-color: red;
+    z-index: 1;
   }
 }
 

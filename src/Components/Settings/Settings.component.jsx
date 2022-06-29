@@ -3,14 +3,14 @@ const Settings = (props) => {
   return (
     <div className="settings">
       <div className="speed-container">
-        <button onClick={changeSpeedHandler} value="-">
+        <label>speed: </label>
+        <button onClick={changeSpeedHandler} name="-">
           -
         </button>
-        <label>speed</label>
-        <button onClick={changeSpeedHandler} value="+">
+        <span>{speed}</span>
+        <button onClick={changeSpeedHandler} name="+">
           +
         </button>
-        <span>{speed}</span>
       </div>
     </div>
   );

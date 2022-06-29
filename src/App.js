@@ -8,6 +8,9 @@ import Settings from "./Components/Settings/Settings.component";
 import Controls from "./Components/Controls/Controls.component";
 
 const App = () => {
+  //-----------------------------------
+  // STATES
+  //-----------------------------------
   //  Snake state
   const [snake, setSnake] = useState(INITIAL_SNAKE);
 
@@ -17,9 +20,7 @@ const App = () => {
   // Scoreboard
   const [score, setScore] = useState(0);
 
-  // Movement
-  const [direction, setDirection] = useState("");
-  const [turnDirection, setTurnDirection] = useState("");
+  const [startGame, setStartGame] = useState(false);
 
   // Keyboard input
   const [currentPressedKey, setCurrentPressedKey] = useState("");
@@ -30,172 +31,143 @@ const App = () => {
   //-----------------------------------
   // EFFECTS
   // ----------------------------------
+  // Keyboard support
   useEffect(() => {
-    // Keyboard support
     document.addEventListener("keydown", (event) => {
-      setDirection(event.key.toLowerCase());
+      setCurrentPressedKey(event.key.toLowerCase());
     });
-  });
 
+    if (currentPressedKey === "escape") {
+      resetGame();
+    }
+    if (currentPressedKey === "enter") {
+      setStartGame(true);
+    }
+  }, [currentPressedKey]);
+
+  // speed of the game
   useEffect(() => {
-    // Moving interval (speed and direction)
     const tick = setInterval(() => {
-      move(direction);
+      if (startGame) {
+        main();
+      }
     }, snake.speed);
-    main();
+
     return () => clearInterval(tick);
   });
 
-  const onClickHandler = (event) => {
-    const { name } = event.target;
-
-    setDirection(name);
-
-    main();
+  //-----------------------------------
+  // GAME
+  //-----------------------------------
+  const main = () => {
+    move(currentPressedKey);
+    eat();
+    checkCollision();
   };
 
-  const dynamicDifficulty = () => {
-    if (score === 10) {
-      setSnake({ ...snake, speed: snake.speed - 10 });
-    }
-    if (score === 20) {
-      setSnake({ ...snake, speed: snake.speed - 20 });
-    }
+  const move = (direction) => {
+    const newBody = JSON.parse(JSON.stringify(snake.body));
+    newBody.unshift({ x: snake.head.x, y: snake.head.y });
+    newBody.pop();
 
-    if (score === 30) {
-      setSnake({ ...snake, speed: snake.speed - 30 });
-    }
-    if (score === 40) {
-      setSnake({ ...snake, speed: snake.speed - 40 });
-    }
-    if (score === 50) {
-      setSnake({ ...snake, speed: snake.speed - 10 });
-    }
-  };
-
-  // const turn = () => {
-  //   if (turnDirection === "s" && (direction === "a" || direction === "d")) {
-  //   }
-  // };
-
-  const move = (pula) => {
-    // start to move when press enter
-    if (pula === "up" || pula === "w" || pula === "arrowup") {
-      setSnake({
-        ...snake,
-        head: { ...snake.head, y: snake.head.y - 1 },
-        body: snake.body.map((cell) => {
-          return { ...cell, y: cell.y - 1 };
-        }),
-      });
-    }
-    if (pula === "down" || pula === "s" || pula === "arrowdown") {
-      setSnake({
-        ...snake,
-        head: { ...snake.head, y: snake.head.y + 1 },
-        body: snake.body.map((cell) => {
-          return { ...cell, y: cell.y + 1 };
-        }),
-      });
-    }
-    if (pula === "left" || pula === "a" || pula === "arrowleft") {
-      setSnake({
-        ...snake,
-        head: { ...snake.head, x: snake.head.x - 1 },
-        body: snake.body.map((cell) => {
-          return { ...cell, x: cell.x - 1 };
-        }),
-      });
-    }
-
-    if (pula === "right" || pula === "d" || pula === "arrowright") {
-      // const newBody = snake.body.map((cell) => {
-      //   return { ...cell, x: cell.x + 1 };
-      // });
-      // console.log(newBody);
+    if (direction === "d" || direction === "right") {
       setSnake({
         ...snake,
         head: { ...snake.head, x: snake.head.x + 1 },
-        body: snake.body.map((cell) => {
-          return { ...cell, x: cell.x + 1 };
-        }),
+        body: newBody,
+      });
+    }
+    if (direction === "a" || direction === "left") {
+      setSnake({
+        ...snake,
+        head: { ...snake.head, x: snake.head.x - 1 },
+        body: newBody,
+      });
+    }
+    if (direction === "w" || direction === "up") {
+      setSnake({
+        ...snake,
+        head: { ...snake.head, y: snake.head.y - 1 },
+        body: newBody,
+      });
+    }
+    if (direction === "s" || direction === "down") {
+      setSnake({
+        ...snake,
+        head: { ...snake.head, y: snake.head.y + 1 },
+        body: newBody,
       });
     }
   };
 
-  const changeSpeed = (event) => {
-    const { value } = event.target;
-
-    if (value === "+") {
-      setSnake({ ...snake, speed: snake.speed + 10 });
-    }
-    if (value === "-") {
-      setSnake({ ...snake, speed: snake.speed - 10 });
-    }
-  };
-
-  const resetGame = () => {
-    console.log(`🗑️🗑️🗑️ Reset game!`);
-
-    setSnake(INITIAL_SNAKE);
-    setFood(generateRandomPosition);
-    setDirection("");
-    setScore(0);
-  };
-
-  //-----------------------------------
-  // Main (rules of the game)
-  // ----------------------------------
-  const main = () => {
-    // Eat food
-    if (snake.head.y === food.y && snake.head.x === food.x) {
-      console.log(
-        `💥💥💥 Contact at: \n🐍: { x: ${snake.head.x}, y: ${snake.head.y} }\n🍅: { x: ${food.x}, y: ${food.y} }`
-      );
-      // -----------------
-      // NEED REWORK HERE
-      // -----------------
-      // newbody
-      // const newBody = snake.body.map((cell) => {
-      //   console.log(`{ x: ${cell.x}, y: ${cell.y} }`);
-      //   return { x: cell.x, y: cell.y };
-      // });
-      // console.log(newBody);
-
-      // // put the new element at the beggining fo the body array
-      // newBody.unshift({ x: food.x, y: food.y });
-      // console.log(newBody);
-
-      // // setSnake({
-      // //   ...snake,
-      // //   head:
-      // //   body: newBody,
-      // // });
-
-      // --------------
-      // END
-      // --------------
-
+  const eat = () => {
+    if (snake.head.x === food.x && snake.head.y === food.y) {
       setScore(score + 1);
       setFood(generateRandomPosition);
-
-      dynamicDifficulty();
+      grow();
     }
-    // Reset game if out of boundaries of the grid or pressed escape
+  };
+
+  const grow = () => {
+    const newBody = JSON.parse(JSON.stringify(snake.body));
+    newBody.unshift({ x: snake.head.x, y: snake.head.y });
+    setSnake({
+      ...snake,
+      body: newBody,
+      speed: accelerate(),
+    });
+  };
+
+  const accelerate = () => {
+    return snake.speed - 5;
+  };
+
+  const checkCollision = () => {
     if (
-      snake.head.y > GRID_SIZE.columns ||
-      snake.head.y < 0 ||
-      snake.head.x > GRID_SIZE.rows ||
-      snake.head.x < 0 ||
-      direction === "escape"
+      snake.head.x > GRID_SIZE.columns ||
+      snake.head.x < 1 ||
+      snake.head.y > GRID_SIZE.rows ||
+      snake.head.y < 1
     ) {
       resetGame();
     }
   };
 
+  const resetGame = () => {
+    console.log(`🆕 Reset game.`);
+    setStartGame(false);
+    setSnake(INITIAL_SNAKE);
+    setFood({ x: 10, y: 10 });
+    setScore(0);
+  };
+  const changeSpeed = (event) => {
+    const { name } = event.target;
+    if (name === "+") {
+      setSnake({ ...snake, speed: snake.speed + 10 });
+    }
+    if (name === "-") {
+      setSnake({ ...snake, speed: snake.speed - 10 });
+    }
+  };
+
+  const onClickControlsHandler = (event) => {
+    const { name } = event.target;
+    console.log(name);
+    move(name);
+  };
+
   return (
     <div className="App">
       <h1>Snake</h1>
+      <div className="info">
+        <p>
+          <strong>enter</strong> - to start/pause the game
+        </p>
+        <p>
+          <strong>escape</strong> - to reset the game
+        </p>
+      </div>
+
       <h3>Score: {score}</h3>
       <div
         className="grid"
@@ -211,7 +183,7 @@ const App = () => {
       </div>
 
       <Settings speed={snake.speed} changeSpeedHandler={changeSpeed} />
-      <Controls onClickHandler={onClickHandler} />
+      <Controls onClickHandler={onClickControlsHandler} />
     </div>
   );
 };
