@@ -1,195 +1,217 @@
 import "./App.scss";
 import { useEffect, useState } from "react";
-import { GRID_SIZE } from "./config";
-
-const inintialSnakePosition = {
-  gridRow: 1,
-  gridColumn: 1,
-};
-
-const generateRandomFoodPosition = () => {
-  return {
-    gridRow: Math.ceil(Math.random() * GRID_SIZE.gridRow),
-    gridColumn: Math.ceil(Math.random() * GRID_SIZE.gridColumn),
-  };
-};
+import { GRID_SIZE, INITIAL_SNAKE, DEFAULT_SPEED } from "./defaults";
+import { generateRandomPosition } from "./helpers/helper";
+import Food from "./Components/Food/Food.component";
+import Snake from "./Components/Snake/Snake.component";
+import Settings from "./Components/Settings/Settings.component";
+import Controls from "./Components/Controls/Controls.component";
 
 const App = () => {
-  const [snakePosition, setSnakePosition] = useState({
-    ...inintialSnakePosition,
-  });
-  const [foodPosition, setFoodPosition] = useState(
-    generateRandomFoodPosition()
-  );
-  const [score, setScore] = useState(0);
-  const [direction, setDirection] = useState("");
-  const [snake, setSnake] = useState({
-    tail: 0,
-  });
-  const [speed, setSpeed] = useState(200);
+  //  Snake state
+  const [snake, setSnake] = useState(INITIAL_SNAKE);
 
-  console.log(GRID_SIZE.gridColumn);
+  // Food state
+  const [food, setFood] = useState(generateRandomPosition());
+
+  // Scoreboard
+  const [score, setScore] = useState(0);
+
+  // Movement
+  const [direction, setDirection] = useState("");
+  const [turnDirection, setTurnDirection] = useState("");
+
+  // Keyboard input
+  const [currentPressedKey, setCurrentPressedKey] = useState("");
+
+  console.log("🐍🐍🐍:");
+  console.dir(snake);
+
+  //-----------------------------------
+  // EFFECTS
+  // ----------------------------------
+  useEffect(() => {
+    // Keyboard support
+    document.addEventListener("keydown", (event) => {
+      setDirection(event.key.toLowerCase());
+    });
+  });
+
+  useEffect(() => {
+    // Moving interval (speed and direction)
+    const tick = setInterval(() => {
+      move(direction);
+    }, snake.speed);
+    main();
+    return () => clearInterval(tick);
+  });
 
   const onClickHandler = (event) => {
     const { name } = event.target;
 
     setDirection(name);
 
-    checkPositions();
+    main();
   };
 
-  const checkPositions = () => {
-    if (
-      snakePosition.gridColumn === foodPosition.gridColumn &&
-      snakePosition.gridRow === foodPosition.gridRow
-    ) {
-      setScore(score + 1);
-      setSnake({ ...snake, tail: snake.tail + 1 });
-      setFoodPosition(generateRandomFoodPosition);
+  const dynamicDifficulty = () => {
+    if (score === 10) {
+      setSnake({ ...snake, speed: snake.speed - 10 });
     }
-    if (
-      snakePosition.gridColumn > GRID_SIZE.gridColumn ||
-      snakePosition.gridColumn < 1 ||
-      snakePosition.gridRow > GRID_SIZE.gridRow ||
-      snakePosition.gridRow < 1 ||
-      direction === "escape"
-    ) {
-      console.log("hello bleaghi");
-      setSnakePosition(inintialSnakePosition);
-      setDirection("");
-      setScore(0);
-      setFoodPosition(generateRandomFoodPosition);
+    if (score === 20) {
+      setSnake({ ...snake, speed: snake.speed - 20 });
+    }
+
+    if (score === 30) {
+      setSnake({ ...snake, speed: snake.speed - 30 });
+    }
+    if (score === 40) {
+      setSnake({ ...snake, speed: snake.speed - 40 });
+    }
+    if (score === 50) {
+      setSnake({ ...snake, speed: snake.speed - 10 });
     }
   };
-  useEffect(checkPositions);
 
-  const reportPosition = () => console.log(snakePosition, foodPosition);
+  // const turn = () => {
+  //   if (turnDirection === "s" && (direction === "a" || direction === "d")) {
+  //   }
+  // };
 
-  // -----------------------------------
-  // Move
-  // -----------------------------------
-  const move = (direction) => {
-    if (direction === "up" || direction === "w" || direction === "arrowup") {
-      setSnakePosition({
-        ...snakePosition,
-        gridRow: snakePosition.gridRow - 1,
+  const move = (pula) => {
+    // start to move when press enter
+    if (pula === "up" || pula === "w" || pula === "arrowup") {
+      setSnake({
+        ...snake,
+        head: { ...snake.head, y: snake.head.y - 1 },
+        body: snake.body.map((cell) => {
+          return { ...cell, y: cell.y - 1 };
+        }),
       });
     }
-    if (
-      direction === "down" ||
-      direction === "s" ||
-      direction === "arrowdown"
-    ) {
-      setSnakePosition({
-        ...snakePosition,
-        gridRow: snakePosition.gridRow + 1,
+    if (pula === "down" || pula === "s" || pula === "arrowdown") {
+      setSnake({
+        ...snake,
+        head: { ...snake.head, y: snake.head.y + 1 },
+        body: snake.body.map((cell) => {
+          return { ...cell, y: cell.y + 1 };
+        }),
       });
     }
-    if (
-      direction === "left" ||
-      direction === "a" ||
-      direction === "arrowleft"
-    ) {
-      setSnakePosition({
-        ...snakePosition,
-        gridColumn: snakePosition.gridColumn - 1,
+    if (pula === "left" || pula === "a" || pula === "arrowleft") {
+      setSnake({
+        ...snake,
+        head: { ...snake.head, x: snake.head.x - 1 },
+        body: snake.body.map((cell) => {
+          return { ...cell, x: cell.x - 1 };
+        }),
       });
     }
-    if (
-      direction === "right" ||
-      direction === "d" ||
-      direction === "arrowright"
-    ) {
-      setSnakePosition({
-        ...snakePosition,
-        gridColumn: snakePosition.gridColumn + 1,
+
+    if (pula === "right" || pula === "d" || pula === "arrowright") {
+      // const newBody = snake.body.map((cell) => {
+      //   return { ...cell, x: cell.x + 1 };
+      // });
+      // console.log(newBody);
+      setSnake({
+        ...snake,
+        head: { ...snake.head, x: snake.head.x + 1 },
+        body: snake.body.map((cell) => {
+          return { ...cell, x: cell.x + 1 };
+        }),
       });
     }
-    console.log(direction);
   };
 
-  useEffect(() => {
-    // on key down
-    document.addEventListener("keydown", (event) => {
-      console.log(event.key);
-      setDirection(event.key.toLowerCase());
-    });
-
-    const interval = setInterval(() => {
-      move(direction);
-    }, speed);
-
-    return () => clearInterval(interval);
-  });
-
-  const changeSpeedHandler = (event) => {
+  const changeSpeed = (event) => {
     const { value } = event.target;
-    console.log(value);
 
     if (value === "+") {
-      setSpeed(speed + 10);
+      setSnake({ ...snake, speed: snake.speed + 10 });
     }
     if (value === "-") {
-      setSpeed(speed - 10);
+      setSnake({ ...snake, speed: snake.speed - 10 });
+    }
+  };
+
+  const resetGame = () => {
+    console.log(`🗑️🗑️🗑️ Reset game!`);
+
+    setSnake(INITIAL_SNAKE);
+    setFood(generateRandomPosition);
+    setDirection("");
+    setScore(0);
+  };
+
+  //-----------------------------------
+  // Main (rules of the game)
+  // ----------------------------------
+  const main = () => {
+    // Eat food
+    if (snake.head.y === food.y && snake.head.x === food.x) {
+      console.log(
+        `💥💥💥 Contact at: \n🐍: { x: ${snake.head.x}, y: ${snake.head.y} }\n🍅: { x: ${food.x}, y: ${food.y} }`
+      );
+      // -----------------
+      // NEED REWORK HERE
+      // -----------------
+      // newbody
+      // const newBody = snake.body.map((cell) => {
+      //   console.log(`{ x: ${cell.x}, y: ${cell.y} }`);
+      //   return { x: cell.x, y: cell.y };
+      // });
+      // console.log(newBody);
+
+      // // put the new element at the beggining fo the body array
+      // newBody.unshift({ x: food.x, y: food.y });
+      // console.log(newBody);
+
+      // // setSnake({
+      // //   ...snake,
+      // //   head:
+      // //   body: newBody,
+      // // });
+
+      // --------------
+      // END
+      // --------------
+
+      setScore(score + 1);
+      setFood(generateRandomPosition);
+
+      dynamicDifficulty();
+    }
+    // Reset game if out of boundaries of the grid or pressed escape
+    if (
+      snake.head.y > GRID_SIZE.columns ||
+      snake.head.y < 0 ||
+      snake.head.x > GRID_SIZE.rows ||
+      snake.head.x < 0 ||
+      direction === "escape"
+    ) {
+      resetGame();
     }
   };
 
   return (
     <div className="App">
       <h1>Snake</h1>
-
       <h3>Score: {score}</h3>
-
-      <div className="grid">
-        <div
-          className="snake"
-          style={{
-            gridRow: snakePosition.gridRow,
-            gridColumn: snakePosition.gridColumn,
-          }}
-          onClick={reportPosition}
-        >
-          &nbsp;
-        </div>
-        <div
-          className="food"
-          style={{
-            gridRow: foodPosition.gridRow,
-            gridColumn: foodPosition.gridColumn,
-          }}
-          onClick={reportPosition}
-        >
-          &nbsp;
-        </div>
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: `repeat(${GRID_SIZE.columns}, 20px)`,
+          gridTemplateRows: `repeat(${GRID_SIZE.rows}, 20px)`,
+          // if you add the gap at the the width will grow
+          // width: `calc(${GRID_SIZE.columns} * 20px)`,
+        }}
+      >
+        <Snake snake={snake} />
+        <Food food={food} />
       </div>
 
-      <div className="settings">
-        <div className="speed-container">
-          <button onClick={changeSpeedHandler} value="-">
-            -
-          </button>
-          <label>speed</label>
-          <button onClick={changeSpeedHandler} value="+">
-            +
-          </button>
-          <span>{speed}</span>
-        </div>
-      </div>
-
-      <div className="controls">
-        <button onClick={onClickHandler} name="up" className="up">
-          up
-        </button>
-        <button onClick={onClickHandler} name="down" className="down">
-          down
-        </button>
-        <button onClick={onClickHandler} name="right" className="right">
-          right
-        </button>
-        <button onClick={onClickHandler} name="left" className="left">
-          left
-        </button>
-      </div>
+      <Settings speed={snake.speed} changeSpeedHandler={changeSpeed} />
+      <Controls onClickHandler={onClickHandler} />
     </div>
   );
 };

@@ -10,7 +10,7 @@ html {
 }
 
 .App {
-  background-color: floralwhite;
+  background-color: antiquewhite;
   width: 90vw;
   margin: 20px auto;
   padding: 20px;
@@ -22,39 +22,41 @@ html {
 }
 
 .grid {
-  background-color: gainsboro;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 2px;
+
   display: grid;
+  gap: 2px;
+  // grid-template-columns: repeat(20, 20px);
+  // grid-template-rows: repeat(20, 20px);
+  // width: calc(20 * 20px);
 
-  grid-template-columns: repeat(20, 20px);
-  grid-template-rows: repeat(20, 20px);
-  width: calc(20 * 20px);
-
-  overflow: hidden;
+  // overflow: hidden;
 
   transition: all 0.2s;
   // position: relative;
 
-  .snake {
+  // SNAKE
+  .head,
+  .body,
+  .food {
     display: inline-block;
     width: auto;
-
-    grid-row: 1;
-
-    background-color: lightgreen;
     border: 1px solid black;
-    border-radius: 2px;
-
-    // z-index: 1;
+    border-radius: 4px;
   }
 
+  .head {
+    background-color: green;
+  }
+  .body {
+    background-color: lightgreen;
+  }
+
+  // FOOD
   .food {
-    background-color: orange;
-    border: 1px solid black;
-    border-radius: 2px;
-
-    grid-row: 5;
-
-    // z-index: 0;
+    background-color: red;
   }
 }
 
