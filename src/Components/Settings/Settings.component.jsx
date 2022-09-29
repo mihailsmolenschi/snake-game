@@ -1,14 +1,18 @@
 const Settings = (props) => {
   const { speed, changeSpeedHandler } = props;
   return (
-    <div className="settings">
+    <div className="settings-container">
       <div className="speed-container">
-        <label>speed: </label>
-        <button onClick={changeSpeedHandler} name="-">
-          -
+        <img
+          className="img--speedometer"
+          src="./icons/speedometer.png"
+          alt="speedometer"
+        />
+        <button className="btn" onClick={changeSpeedHandler} name="+">
+          &ndash;
         </button>
         <span>{speed}</span>
-        <button onClick={changeSpeedHandler} name="+">
+        <button className="btn" onClick={changeSpeedHandler} name="-">
           +
         </button>
       </div>
